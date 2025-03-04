@@ -76,6 +76,8 @@ public class Scanner {
                     while (peek() != '\n' && !isAtEnd()) {
                         advance();
                     }
+                } else if (match('*')) {
+                    multilineComment();
                 } else {
                     addToken(TokenType.SLASH);
                 }
@@ -140,6 +142,20 @@ public class Scanner {
         advance();
         String value = source.substring(start + 1, current - 1);
         addToken(TokenType.STRING, value);
+    }
+
+    private void multilineComment() {
+        while ((peek() != '*' && peekNext() != '/') && !isAtEnd()) {
+            if (peek() == '\n') {
+                line++;
+            }
+            advance();
+        }
+        if (isAtEnd()) {
+            Lox.error(line, "Unterminated multiline comment");
+            return;
+        }
+        advance();
     }
 
     private boolean isDigit(char c) {
