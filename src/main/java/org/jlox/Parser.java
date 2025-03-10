@@ -25,13 +25,26 @@ public class Parser {
     }
 
     private Expr comma() {
-        Expr expr = equality();
+        Expr expr = conditional();
 
         while (match(TokenType.COMMA)) {
             Token operator = previous();
-            Expr right = equality();
+            Expr right = conditional();
             expr = new Expr.Binary(expr, operator, right);
         }
+        return expr;
+    }
+
+    private Expr conditional() {
+        Expr expr = equality();
+
+        if (match(TokenType.QUESTION)) {
+            Expr thenExpression = expression();
+            consume(TokenType.COLON, "Expect ':' after expression.");
+            Expr elseExpression = conditional();
+            expr = new Expr.Conditional(expr, thenExpression, elseExpression);
+        }
+
         return expr;
     }
 

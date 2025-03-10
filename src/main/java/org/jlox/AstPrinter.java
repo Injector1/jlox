@@ -43,6 +43,11 @@ public class AstPrinter implements Expr.Visitor<String> {
         return parenthesize(expr.getOperator().getLexeme(), expr.getRight());
     }
 
+    @Override
+    public String visitConditionalExpr(Expr.Conditional expr) {
+        return parenthesize("?:", expr.getCondition(), expr.getThenbranch(), expr.getElsebranch());
+    }
+
     private String parenthesize(String name, Expr... exprs) {
         StringBuilder stringBuilder = new StringBuilder();
 

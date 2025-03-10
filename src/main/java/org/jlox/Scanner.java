@@ -71,6 +71,8 @@ public class Scanner {
             case '=' -> addToken(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
             case '<' -> addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
             case '>' -> addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER);
+            case '?' -> addToken(TokenType.QUESTION);
+            case ':' -> addToken(TokenType.COLON);
             case '/' -> {
                 if (match('/')) {
                     while (peek() != '\n' && !isAtEnd()) {
