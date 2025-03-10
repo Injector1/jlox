@@ -49,6 +49,12 @@ public class Parser {
     }
 
     private Expr equality() {
+        if (check(TokenType.BANG_EQUAL) || check(TokenType.EQUAL_EQUAL)) {
+            error(peek(), "Binary operator '" + peek().getLexeme() + "' has no left-hand operator");
+            advance();
+            return comparison();
+        }
+
         Expr expr = comparison();
 
         while (match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
@@ -61,6 +67,13 @@ public class Parser {
     }
 
     private Expr comparison() {
+        if (check(TokenType.GREATER) || check(TokenType.GREATER_EQUAL)
+                || check(TokenType.LESS) || check(TokenType.LESS_EQUAL)) {
+            error(peek(), "Binary operator '" + peek().getLexeme() + "' has no left-hand operand.");
+            advance();
+            return term();
+        }
+
         Expr expr = term();
 
         while (match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
@@ -85,6 +98,12 @@ public class Parser {
     }
 
     private Expr factor() {
+        if (check(TokenType.SLASH) || check(TokenType.STAR)) {
+            error(peek(), "Binary operator '" + peek().getLexeme() + "' has no left-hand operand.");
+            advance();
+            return unary();
+        }
+
         Expr expr = unary();
 
         while (match(TokenType.SLASH, TokenType.STAR)) {
