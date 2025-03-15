@@ -1,5 +1,7 @@
 package org.jlox;
 
+import org.jlox.exception.RuntimeError;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,7 +11,9 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Lox {
+    private static final Interpreter interpreter = new Interpreter();
     private static boolean hasError = false;
+    private static boolean hadRuntimeError = true;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
@@ -28,6 +32,9 @@ public class Lox {
         run(new String(bytes, Charset.defaultCharset()));
         if (hasError) {
             System.exit(65);
+        }
+        if (hadRuntimeError) {
+            System.exit(70);
         }
     }
 
@@ -55,8 +62,7 @@ public class Lox {
         if (hasError) {
             return;
         }
-
-        System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expression);
     }
 
     static void error(int line, String message) {
@@ -69,6 +75,11 @@ public class Lox {
         } else {
             report(token.getLine(), " at '" + token.getLexeme() + "'", message);
         }
+    }
+
+    static void runtimeError(RuntimeError error) {
+        System.err.println(error.getMessage() + "\n[line " + error.getToken().getLine() + "]");
+        hadRuntimeError = true;
     }
 
     private static void report(int line, String where, String message) {
