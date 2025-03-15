@@ -26,20 +26,51 @@ public class Interpreter implements Expr.Visitor<Object> {
                 return isEqual(left, right);
             }
             case GREATER -> {
-                checkNumberOperands(expr.getOperator(), left, right);
-                return (double) left > (double) right;
+                if (left instanceof Double && right instanceof Double) {
+                    return ((double) left) > ((double) right);
+                } else if (left instanceof String && right instanceof String) {
+                    return ((String) left).compareTo(((String) right)) > 0;
+                }
+                throw new RuntimeError(
+                        expr.getOperator(),
+                        "Operands for '>' must be both numbers or both strings."
+                );
             }
             case GREATER_EQUAL -> {
-                checkNumberOperands(expr.getOperator(), left, right);
-                return (double) left >= (double) right;
+                if (left instanceof Double && right instanceof Double) {
+                    return (double) left >= (double) right;
+                } else if (left instanceof String && right instanceof String) {
+                    return ((String) left).compareTo((String) right) >= 0;
+                } else {
+                    throw new RuntimeError(
+                            expr.getOperator(),
+                            "Operands for '>=' must be both numbers or both strings."
+                    );
+                }
             }
             case LESS -> {
-                checkNumberOperands(expr.getOperator(), left, right);
-                return (double) left < (double) right;
+                if (left instanceof Double && right instanceof Double) {
+                    return (double) left < (double) right;
+                } else if (left instanceof String && right instanceof String) {
+                    return ((String) left).compareTo((String) right) < 0;
+                } else {
+                    throw new RuntimeError(
+                            expr.getOperator(),
+                            "Operands for '<' must be both numbers or both strings."
+                    );
+                }
             }
             case LESS_EQUAL -> {
-                checkNumberOperands(expr.getOperator(), left, right);
-                return (double) left <= (double) right;
+                if (left instanceof Double && right instanceof Double) {
+                    return (double) left <= (double) right;
+                } else if (left instanceof String && right instanceof String) {
+                    return ((String) left).compareTo((String) right) <= 0;
+                } else {
+                    throw new RuntimeError(
+                            expr.getOperator(),
+                            "Operands for '<=' must be both numbers or both strings."
+                    );
+                }
             }
             case MINUS -> {
                 checkNumberOperands(expr.getOperator(), left, right);
@@ -48,13 +79,19 @@ public class Interpreter implements Expr.Visitor<Object> {
             case PLUS -> {
                 if (left instanceof Double && right instanceof Double) {
                     return (double) left + (double) right;
-                } else if (left instanceof String && right instanceof String) {
-                    return (String) left + (String) right;
+                } else if (left instanceof String || right instanceof String) {
+                    return stringify(left) + stringify(right);
                 }
-                throw new RuntimeError(expr.getOperator(), "Operands must be two numbers or two strings");
+                throw new RuntimeError(
+                        expr.getOperator(),
+                        "Operands must be two numbers or two strings"
+                );
             }
             case SLASH -> {
                 checkNumberOperands(expr.getOperator(), left, right);
+                if ((double) right == 0.0) {
+                    throw new RuntimeError(expr.getOperator(), "Division by zero");
+                }
                 return (double) left / (double) right;
             }
             case STAR -> {
