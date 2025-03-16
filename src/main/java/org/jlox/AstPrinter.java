@@ -44,6 +44,12 @@ public class AstPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitVariableExpr(Expr.Variable expr) {
+        // TODO: implement this
+        return "";
+    }
+
+    @Override
     public String visitConditionalExpr(Expr.Conditional expr) {
         return parenthesize("?:", expr.getCondition(), expr.getThenbranch(), expr.getElsebranch());
     }

@@ -2,17 +2,20 @@ package org.jlox;
 
 import org.jlox.exception.RuntimeError;
 
+import java.util.List;
 import java.util.Optional;
 
-public class Interpreter implements Expr.Visitor<Object> {
-    void interpret(Expr expression) {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
     }
+
     @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
         Object left = evaluate(expr.getLeft());
@@ -129,8 +132,38 @@ public class Interpreter implements Expr.Visitor<Object> {
     }
 
     @Override
-    public Object visitConditionalExpr(Expr.Conditional expr) {
+    public Object visitVariableExpr(Expr.Variable expr) {
+        // TODO: implement this
         return null;
+    }
+
+    @Override
+    public Object visitConditionalExpr(Expr.Conditional expr) {
+        // TODO: implement this
+        return null;
+    }
+
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.getExpression());
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object value = evaluate(stmt.getExpression());
+        System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitVarStmt(Stmt.Var stmt) {
+        // TODO: implement this
+        return null;
+    }
+
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
     }
 
     private Object evaluate(Expr expr) {
