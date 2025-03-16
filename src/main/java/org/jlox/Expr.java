@@ -8,6 +8,7 @@ abstract class Expr {
 		R visitGroupingExpr(Grouping expr);
 		R visitLiteralExpr(Literal expr);
 		R visitUnaryExpr(Unary expr);
+		R visitVariableExpr(Variable expr);
 		R visitConditionalExpr(Conditional expr);
 	}
 
@@ -94,6 +95,23 @@ abstract class Expr {
 
 		public Expr getRight() {
 			return this.right;
+		}
+	}
+
+	public static class Variable extends Expr {
+		private final Token name;
+
+		Variable(Token name) {
+			this.name = name;
+		}
+
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitVariableExpr(this);
+		}
+
+		public Token getName() {
+			return this.name;
 		}
 	}
 
