@@ -43,7 +43,7 @@ public class Lox {
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
         for (;;) {
-            System.out.println("> ");
+            System.out.print("> ");
             String line = bufferedReader.readLine();
             if (line == null) {
                 break;
@@ -57,12 +57,18 @@ public class Lox {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
-        List<Stmt> expression = parser.parse();
+        List<Stmt> statements = parser.parse();
 
         if (hasError) {
             return;
         }
-        interpreter.interpret(expression);
+
+        if (statements.size() == 1 && statements.get(0) instanceof Stmt.Expression) {
+            Object value = interpreter.evaluateExpression(((Stmt.Expression) statements.get(0)));
+            System.out.println(interpreter.stringify(value));
+        } else {
+            interpreter.interpret(statements);
+        }
     }
 
     static void error(int line, String message) {
