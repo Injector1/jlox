@@ -32,6 +32,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
+        if (expr.getOperator().getType() == TokenType.COMMA) {
+            evaluate(expr.getLeft());
+            return evaluate(expr.getRight());
+        }
+
         Object left = evaluate(expr.getLeft());
         Object right = evaluate(expr.getRight());
 
