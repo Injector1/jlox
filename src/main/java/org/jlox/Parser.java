@@ -53,10 +53,22 @@ public class Parser {
         if (match(TokenType.PRINT)) {
             return printStatement();
         }
+        if (match(TokenType.WHILE)) {
+            return whileStatement();
+        }
         if (match(TokenType.LEFT_BRACE)) {
             return new Stmt.Block(block());
         }
         return expressionStatement();
+    }
+
+    private Stmt whileStatement() {
+        consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'");
+        Expr condition = expression();
+        consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.");
+        Stmt body = statement();
+
+        return new Stmt.While(condition, body);
     }
 
     private Stmt ifStatement() {
@@ -100,7 +112,7 @@ public class Parser {
     }
 
     private Expr assignment() {
-        Expr expr = comma();
+        Expr expr = or();
 
         if (match(TokenType.EQUAL)) {
             Token equals = previous();
@@ -111,6 +123,28 @@ public class Parser {
                 return new Expr.Assign(name, value);
             }
             error(equals, "Invalid assignment target.");
+        }
+        return expr;
+    }
+
+    private Expr or() {
+        Expr expr = and();
+
+        while (match(TokenType.OR)) {
+            Token operator = previous();
+            Expr right = and();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+        return expr;
+    }
+
+    private Expr and() {
+        Expr expr = comma();
+
+        while (match(TokenType.AND)) {
+            Token operator = previous();
+            Expr right = comma();
+            expr = new Expr.Logical(expr, operator, right);
         }
         return expr;
     }
