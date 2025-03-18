@@ -1,5 +1,6 @@
 package org.jlox;
 
+import org.jlox.exception.BreakError;
 import org.jlox.exception.RuntimeError;
 
 import java.util.List;
@@ -222,10 +223,24 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
-        while (isTruthy(evaluate(stmt.getCondition()))) {
-            execute(stmt.getBody());
+        try {
+            while (isTruthy(evaluate(stmt.getCondition()))) {
+                try {
+                    execute(stmt.getBody());
+                } catch (BreakError breakErr) {
+                    break;
+                }
+            }
+        } catch (BreakError breakErr) {
+            // ignore
         }
+
         return null;
+    }
+
+    @Override
+    public Void visitBreakStmt(Stmt.Break stmt) {
+        throw new BreakError();
     }
 
     private void executeBlock(List<Stmt> statements, Environment environment) {
