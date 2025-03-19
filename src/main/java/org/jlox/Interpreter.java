@@ -2,13 +2,20 @@ package org.jlox;
 
 import org.jlox.exception.BreakError;
 import org.jlox.exception.RuntimeError;
+import org.jlox.primitives.Clock;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-    private Environment environment = new Environment();
+    private final Environment globals = new Environment();
+    private Environment environment = globals;
 
+
+    Interpreter() {
+        globals.define("clock", new Clock());
+    }
 
     void interpret(List<Stmt> statements) {
         try {
@@ -126,6 +133,32 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitCallExpr(Expr.Call expr) {
+        Object callee = evaluate(expr.getCallee());
+
+        List<Object> arguments = new ArrayList<>();
+
+        for (Expr argument : expr.getArguments()) {
+            arguments.add(evaluate(argument));
+        }
+
+        if (!(callee instanceof LoxCallable)) {
+            throw new RuntimeError(expr.getParen(), "Can only call functions and classes.");
+        }
+
+        LoxCallable function = (LoxCallable) callee;
+
+        if (arguments.size() != function.arity()) {
+            throw new RuntimeError(
+                    expr.getParen(),
+                    "Expected " + function.arity() + " arguments but got "
+                            + arguments.size() + ".");
+        }
+
+        return function.call(this, arguments);
+    }
+
+    @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
         return evaluate(expr.getExpression());
     }
@@ -195,6 +228,13 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitFunctionStmt(Stmt.Function stmt) {
+        LoxFunction function = new LoxFunction(stmt);
+        environment.define(stmt.getName().getLexeme(), function);
+        return null;
+    }
+
+    @Override
     public Void visitIfStmt(Stmt.If stmt) {
         if (isTruthy(evaluate(stmt.getCondition()))) {
             execute(stmt.getThenbranch());
@@ -243,7 +283,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         throw new BreakError();
     }
 
-    private void executeBlock(List<Stmt> statements, Environment environment) {
+    public void executeBlock(List<Stmt> statements, Environment environment) {
         Environment previous = this.environment;
         try {
             this.environment = environment;
@@ -313,5 +353,9 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             return text;
         }
         return object.toString();
+    }
+
+    public Environment getGlobals() {
+        return globals;
     }
 }
