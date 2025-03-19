@@ -238,11 +238,11 @@ public class Parser {
     }
 
     private Expr comma() {
-        Expr expr = conditional();
+        Expr expr = assignment();
 
         while (match(TokenType.COMMA)) {
             Token operator = previous();
-            Expr right = conditional();
+            Expr right = assignment();
             expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
@@ -253,7 +253,7 @@ public class Parser {
 
         if (match(TokenType.EQUAL)) {
             Token equals = previous();
-            Expr value = conditional();
+            Expr value = assignment();
 
             if (expr instanceof Expr.Variable) {
                 Token name = ((Expr.Variable) expr).getName();
