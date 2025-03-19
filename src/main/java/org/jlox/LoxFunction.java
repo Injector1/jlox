@@ -1,11 +1,15 @@
 package org.jlox;
 
+import org.jlox.exception.Return;
+
 import java.util.List;
 
 public class LoxFunction implements LoxCallable {
     private final Stmt.Function declaration;
+    private final Environment closure;
 
-    LoxFunction(Stmt.Function declaration) {
+    LoxFunction(Stmt.Function declaration, Environment closure) {
+        this.closure = closure;
         this.declaration = declaration;
     }
 
@@ -16,17 +20,26 @@ public class LoxFunction implements LoxCallable {
 
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
-        Environment environment = new Environment(interpreter.getGlobals());
+        Environment environment = new Environment(closure);
 
         for (int i = 0; i < declaration.getParams().size(); i++) {
             environment.define(declaration.getParams().get(i).getLexeme(), arguments.get(i));
         }
-        interpreter.executeBlock(declaration.getBody(), environment);
+        try {
+            interpreter.executeBlock(declaration.getBody(), environment);
+        } catch (Return returnValue) {
+            return returnValue.getValue();
+        }
+
         return null;
     }
 
     @Override
     public String toString() {
         return "<fn " + declaration.getName().getLexeme() + ">";
+    }
+
+    public Environment getClosure() {
+        return closure;
     }
 }

@@ -1,6 +1,7 @@
 package org.jlox;
 
 import org.jlox.exception.BreakError;
+import org.jlox.exception.Return;
 import org.jlox.exception.RuntimeError;
 import org.jlox.primitives.Clock;
 
@@ -229,7 +230,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        LoxFunction function = new LoxFunction(stmt);
+        LoxFunction function = new LoxFunction(stmt, environment);
         environment.define(stmt.getName().getLexeme(), function);
         return null;
     }
@@ -249,6 +250,15 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         Object value = evaluate(stmt.getExpression());
         System.out.println(stringify(value));
         return null;
+    }
+
+    @Override
+    public Void visitReturnStmt(Stmt.Return stmt) {
+        Object value = null;
+        if (stmt.getValue() != null) {
+            value = evaluate(stmt.getValue());
+        }
+        throw new Return(value);
     }
 
     @Override
