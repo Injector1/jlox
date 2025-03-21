@@ -72,6 +72,12 @@ public class AstPrinter implements Expr.Visitor<String> {
         return parenthesize("?:", expr.getCondition(), expr.getThenbranch(), expr.getElsebranch());
     }
 
+    @Override
+    public String visitAnonFunctionExpr(Expr.AnonFunction expr) {
+        // TODO: implement this
+        return "";
+    }
+
     private String parenthesize(String name, Expr... exprs) {
         StringBuilder stringBuilder = new StringBuilder();
 
