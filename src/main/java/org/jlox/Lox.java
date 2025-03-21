@@ -13,7 +13,7 @@ import java.util.List;
 public class Lox {
     private static final Interpreter interpreter = new Interpreter();
     private static boolean hasError = false;
-    private static boolean hadRuntimeError = true;
+    private static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
