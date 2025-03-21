@@ -385,6 +385,9 @@ public class Parser {
     }
 
     private Expr primary() {
+        if (match(TokenType.FUN)) {
+            return anonymousFunction();
+        }
         if (match(TokenType.FALSE)) {
             return new Expr.Literal(false);
         }
@@ -410,6 +413,26 @@ public class Parser {
         }
 
         throw error(peek(), "Expect expression.");
+    }
+
+    private Expr anonymousFunction() {
+        consume(TokenType.LEFT_PAREN, "Expect '(' after 'fun'.");
+        List<Token> parameters = new ArrayList<>();
+
+        if (!check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 255) {
+                    error(peek(), "Can't have more than 255 parameters.");
+                }
+                parameters.add(consume(TokenType.IDENTIFIER, "Expect parameter name."));
+            } while (match(TokenType.COMMA));
+        }
+        consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
+        consume(TokenType.LEFT_BRACE, "Expect '{' before function body");
+
+        List<Stmt> body = block();
+
+        return new Expr.AnonFunction(parameters, body);
     }
 
     private Token consume(TokenType type,  String message) {
