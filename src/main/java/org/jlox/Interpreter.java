@@ -217,6 +217,13 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitAnonFunctionExpr(Expr.AnonFunction expr) {
+        Token dummyName = new Token(TokenType.IDENTIFIER, "<anon>", null, -1);
+        Stmt.Function functionStmt = new Stmt.Function(dummyName, expr.getParams(), expr.getBody());
+        return new LoxFunction(functionStmt, environment);
+    }
+
+    @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
         executeBlock(stmt.getStatements(), new Environment(environment));
         return null;
