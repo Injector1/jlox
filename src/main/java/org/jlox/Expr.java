@@ -13,6 +13,7 @@ abstract class Expr {
 		R visitUnaryExpr(Unary expr);
 		R visitVariableExpr(Variable expr);
 		R visitConditionalExpr(Conditional expr);
+		R visitAnonFunctionExpr(AnonFunction expr);
 	}
 
 	public static class Assign extends Expr {
@@ -225,6 +226,29 @@ abstract class Expr {
 
 		public Expr getElsebranch() {
 			return this.elseBranch;
+		}
+	}
+
+	public static class AnonFunction extends Expr {
+		private final List<Token> params;
+		private final List<Stmt> body;
+
+		AnonFunction(List<Token> params, List<Stmt> body) {
+			this.params = params;
+			this.body = body;
+		}
+
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitAnonFunctionExpr(this);
+		}
+
+		public List<Token> getParams() {
+			return this.params;
+		}
+
+		public List<Stmt> getBody() {
+			return this.body;
 		}
 	}
 
