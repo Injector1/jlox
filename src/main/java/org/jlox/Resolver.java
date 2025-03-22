@@ -7,7 +7,7 @@ import java.util.Stack;
 
 public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private final Interpreter interpreter;
-    private final Stack<Map<String, Boolean>> scopes = new Stack<>();
+    private final Stack<Map<String, VarState>> scopes = new Stack<>();
     private FunctionType currentFunction = FunctionType.NONE;
     private int loopDepth = 0;
 
@@ -35,7 +35,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitVariableExpr(Expr.Variable expr) {
-        if (!scopes.isEmpty() && scopes.peek().get(expr.getName().getLexeme()) == Boolean.FALSE) {
+        if (!scopes.isEmpty() && scopes.peek().get(expr.getName().getLexeme()).isDefined() == Boolean.FALSE) {
             Lox.error(expr.getName(), "Can't read local variable in its own initializer");
         }
         resolveLocal(expr, expr.getName());
@@ -201,7 +201,15 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     private void endScope() {
-        scopes.pop();
+        Map<String, VarState> scope = scopes.pop();
+
+        for (Map.Entry<String, VarState> entry : scope.entrySet()) {
+            VarState state = entry.getValue();
+
+            if (state.isDefined() && !state.isUsed()) {
+                Lox.error(-1, "Variable '" + entry.getKey() + "' is never used.");
+            }
+        }
     }
 
     private void declare(Token name) {
@@ -209,28 +217,56 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             return;
         }
 
-        Map<String, Boolean> scope = scopes.peek();
+        Map<String, VarState> scope = scopes.peek();
 
         if (scope.containsKey(name.getLexeme())) {
             Lox.error(name, "Already a variable with this name in this scope.");
         }
 
-        scope.put(name.getLexeme(), false);
+        VarState state = new VarState();
+        state.setDefined(false);
+        state.setUsed(false);
+        scope.put(name.getLexeme(), state);
     }
 
     private void define(Token name) {
         if (scopes.isEmpty()) {
             return;
         }
-        scopes.peek().put(name.getLexeme(), true);
+        Map<String, VarState> scope = scopes.peek();
+        VarState state = scope.get(name.getLexeme());
+        state.setDefined(true);
     }
 
     private void resolveLocal(Expr expr, Token name) {
         for (int i = scopes.size() - 1; i >= 0; i--) {
-            if (scopes.get(i).containsKey(name.getLexeme())) {
+            Map<String, VarState> scope = scopes.get(i);
+            if (scope.containsKey(name.getLexeme())) {
                 interpreter.resolve(expr, scopes.size() - 1 - i);
+                scope.get(name.getLexeme()).setUsed(true);
                 return;
             }
+        }
+    }
+
+    private static class VarState {
+        private boolean defined = false;
+        private boolean used = false;
+
+        public boolean isUsed() {
+            return used;
+        }
+
+        public void setUsed(boolean used) {
+            this.used = used;
+        }
+
+        public boolean isDefined() {
+            return defined;
+        }
+
+        public void setDefined(boolean defined) {
+            this.defined = defined;
         }
     }
 }
