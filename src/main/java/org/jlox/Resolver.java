@@ -9,6 +9,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private final Interpreter interpreter;
     private final Stack<Map<String, Boolean>> scopes = new Stack<>();
     private FunctionType currentFunction = FunctionType.NONE;
+    private int loopDepth = 0;
 
     Resolver(Interpreter interpreter) {
         this.interpreter = interpreter;
@@ -147,13 +148,18 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
+        loopDepth++;
         resolve(stmt.getCondition());
         resolve(stmt.getBody());
+        loopDepth--;
         return null;
     }
 
     @Override
     public Void visitBreakStmt(Stmt.Break stmt) {
+        if (loopDepth == 0) {
+            Lox.error(stmt.getKeyword(), "Can't break from outside a loop.");
+        }
         return null;
     }
 
