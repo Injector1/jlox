@@ -63,6 +63,13 @@ public class Lox {
             return;
         }
 
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+
+        if (hasError) {
+            return;
+        }
+
         if (statements.size() == 1 && statements.get(0) instanceof Stmt.Expression) {
             Object value = interpreter.evaluateExpression(((Stmt.Expression) statements.get(0)));
             System.out.println(interpreter.stringify(value));
