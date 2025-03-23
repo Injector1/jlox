@@ -26,6 +26,11 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
         declare(stmt.getName());
+
+        for (Stmt.Function method : stmt.getMethods()) {
+            FunctionType declaration = FunctionType.METHOD;
+            resolveFunction(method, declaration);
+        }
         define(stmt.getName());
         return null;
     }
