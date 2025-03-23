@@ -257,7 +257,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Object visitAnonFunctionExpr(Expr.AnonFunction expr) {
         Token dummyName = new Token(TokenType.IDENTIFIER, "<anon>", null, -1);
         Stmt.Function functionStmt = new Stmt.Function(dummyName, expr.getParams(), expr.getBody());
-        return new LoxFunction(functionStmt, environment);
+        return new LoxFunction(functionStmt, environment, false);
     }
 
     @Override
@@ -272,7 +272,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         Map<String, LoxFunction> methods = new HashMap<>();
 
         for (Stmt.Function method : stmt.getMethods()) {
-            LoxFunction function = new LoxFunction(method, environment);
+            LoxFunction function = new LoxFunction(method, environment, method.getName().getLexeme().equals("init"));
             methods.put(method.getName().getLexeme(), function);
         }
 
@@ -289,7 +289,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        LoxFunction function = new LoxFunction(stmt, environment);
+        LoxFunction function = new LoxFunction(stmt, environment, false);
         environment.define(stmt.getName().getLexeme(), function);
         return null;
     }
