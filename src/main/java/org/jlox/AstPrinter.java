@@ -63,6 +63,12 @@ public class AstPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitSetExpr(Expr.Set expr) {
+        // TODO: implement this
+        return "";
+    }
+
+    @Override
     public String visitUnaryExpr(Expr.Unary expr) {
         return parenthesize(expr.getOperator().getLexeme(), expr.getRight());
     }
