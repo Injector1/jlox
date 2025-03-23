@@ -26,12 +26,17 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
         declare(stmt.getName());
-
+        define(stmt.getName());
+        beginScope();
+        VarState state = new VarState();
+        state.setDefined(true);
+        state.setUsed(false);
+        scopes.peek().put("this", state);
         for (Stmt.Function method : stmt.getMethods()) {
             FunctionType declaration = FunctionType.METHOD;
             resolveFunction(method, declaration);
         }
-        define(stmt.getName());
+        endScope();
         return null;
     }
 
@@ -115,6 +120,12 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitSetExpr(Expr.Set expr) {
         resolve(expr.getValue());
         resolve(expr.getObject());
+        return null;
+    }
+
+    @Override
+    public Void visitThisExpr(Expr.This expr) {
+        resolveLocal(expr, expr.getKeyword());
         return null;
     }
 
