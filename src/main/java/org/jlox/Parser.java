@@ -48,7 +48,7 @@ public class Parser {
 
         List<Stmt.Function> methods = new ArrayList<>();
 
-        while (!check(TokenType.RIGHT_PAREN) && !isAtEnd()) {
+        while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
             methods.add(function("method"));
         }
 
