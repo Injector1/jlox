@@ -38,6 +38,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         scopes.peek().put("this", state);
         for (Stmt.Function method : stmt.getMethods()) {
             FunctionType declaration = FunctionType.METHOD;
+            if (method.getName().getLexeme().equals("init")) {
+                declaration = FunctionType.INITIALIZER;
+            }
             resolveFunction(method, declaration);
         }
         endScope();
@@ -187,6 +190,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             Lox.error(stmt.getKeyword(), "Can't return from top-level code.");
         }
         if (stmt.getValue() != null) {
+            if (currentFunction == FunctionType.INITIALIZER) {
+                Lox.error(stmt.getKeyword(), "Can't return a value from an initializer.");
+            }
             resolve(stmt.getValue());
         }
         return null;
