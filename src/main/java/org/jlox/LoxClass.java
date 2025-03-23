@@ -1,12 +1,22 @@
 package org.jlox;
 
 import java.util.List;
+import java.util.Map;
 
 public class LoxClass implements LoxCallable{
     private final String name;
+    private final Map<String, LoxFunction> methods;
 
-    public LoxClass(String name) {
+    public LoxClass(String name, Map<String, LoxFunction> methods) {
         this.name = name;
+        this.methods = methods;
+    }
+
+    public LoxFunction findMethod(String name) {
+        if (methods.containsKey(name)) {
+            return methods.get(name);
+        }
+        return null;
     }
 
     @Override
