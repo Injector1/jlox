@@ -7,6 +7,7 @@ abstract class Expr {
 		R visitAssignExpr(Assign expr);
 		R visitBinaryExpr(Binary expr);
 		R visitCallExpr(Call expr);
+		R visitGetExpr(Get expr);
 		R visitGroupingExpr(Grouping expr);
 		R visitLiteralExpr(Literal expr);
 		R visitLogicalExpr(Logical expr);
@@ -94,6 +95,29 @@ abstract class Expr {
 
 		public List<Expr> getArguments() {
 			return this.arguments;
+		}
+	}
+
+	public static class Get extends Expr {
+		private final Expr object;
+		private final Token name;
+
+		Get(Expr object, Token name) {
+			this.object = object;
+			this.name = name;
+		}
+
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitGetExpr(this);
+		}
+
+		public Expr getObject() {
+			return this.object;
+		}
+
+		public Token getName() {
+			return this.name;
 		}
 	}
 
