@@ -170,6 +170,15 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitGetExpr(Expr.Get expr) {
+        Object object = evaluate(expr.getObject());
+        if (object instanceof LoxInstance) {
+            return ((LoxInstance) object).get(expr.getName());
+        }
+        throw new RuntimeError(expr.getName(), "Only instances have properties.");
+    }
+
+    @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
         return evaluate(expr.getExpression());
     }
@@ -236,6 +245,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
         executeBlock(stmt.getStatements(), new Environment(environment));
+        return null;
+    }
+
+    @Override
+    public Void visitClassStmt(Stmt.Class stmt) {
+        environment.define(stmt.getName().getLexeme(), null);
+        LoxClass loxClass = new LoxClass(stmt.getName().getLexeme());
+        environment.assign(stmt.getName(), loxClass);
         return null;
     }
 

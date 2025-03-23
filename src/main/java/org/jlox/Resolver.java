@@ -24,6 +24,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitClassStmt(Stmt.Class stmt) {
+        declare(stmt.getName());
+        define(stmt.getName());
+        return null;
+    }
+
+    @Override
     public Void visitVarStmt(Stmt.Var stmt) {
         declare(stmt.getName());
         if (stmt.getInitializer() != null) {
@@ -72,6 +79,12 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             resolve(argument);
         }
 
+        return null;
+    }
+
+    @Override
+    public Void visitGetExpr(Expr.Get expr) {
+        resolve(expr.getObject());
         return null;
     }
 
