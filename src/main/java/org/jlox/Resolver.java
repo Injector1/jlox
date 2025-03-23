@@ -107,6 +107,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitSetExpr(Expr.Set expr) {
+        resolve(expr.getValue());
+        resolve(expr.getObject());
+        return null;
+    }
+
+    @Override
     public Void visitUnaryExpr(Expr.Unary expr) {
         resolve(expr.getRight());
         return null;
