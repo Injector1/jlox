@@ -36,10 +36,12 @@ abstract class Stmt {
 	public static class Class extends Stmt {
 		private final Token name;
 		private final List<Stmt.Function> methods;
+		private final List<Stmt.Function> staticMethods;
 
-		Class(Token name, List<Stmt.Function> methods) {
+		Class(Token name, List<Stmt.Function> methods, List<Stmt.Function> staticMethods) {
 			this.name = name;
 			this.methods = methods;
+			this.staticMethods = staticMethods;
 		}
 
 		@Override
@@ -53,6 +55,10 @@ abstract class Stmt {
 
 		public List<Stmt.Function> getMethods() {
 			return this.methods;
+		}
+
+		public List<Stmt.Function> getStaticmethods() {
+			return this.staticMethods;
 		}
 	}
 

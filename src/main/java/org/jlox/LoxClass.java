@@ -1,15 +1,19 @@
 package org.jlox;
 
+import org.jlox.exception.RuntimeError;
+
 import java.util.List;
 import java.util.Map;
 
-public class LoxClass implements LoxCallable{
+public class LoxClass implements LoxCallable {
     private final String name;
     private final Map<String, LoxFunction> methods;
+    private final Map<String, LoxFunction> staticMethods;
 
-    public LoxClass(String name, Map<String, LoxFunction> methods) {
+    public LoxClass(String name, Map<String, LoxFunction> methods, Map<String, LoxFunction> staticMethods) {
         this.name = name;
         this.methods = methods;
+        this.staticMethods = staticMethods;
     }
 
     public LoxFunction findMethod(String name) {
@@ -17,6 +21,21 @@ public class LoxClass implements LoxCallable{
             return methods.get(name);
         }
         return null;
+    }
+
+    public LoxFunction findStaticMethod(String name) {
+        if (staticMethods.containsKey(name)) {
+            return staticMethods.get(name);
+        }
+        return null;
+    }
+
+    public Object getStatic(Token name) {
+        LoxFunction method = findStaticMethod(name.getLexeme());
+        if (method != null) {
+            return method;
+        }
+        throw new RuntimeError(name, "Undefined static property '" + name.getLexeme() + "'.");
     }
 
     @Override
