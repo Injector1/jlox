@@ -11,6 +11,7 @@ abstract class Expr {
 		R visitGroupingExpr(Grouping expr);
 		R visitLiteralExpr(Literal expr);
 		R visitLogicalExpr(Logical expr);
+		R visitSetExpr(Set expr);
 		R visitUnaryExpr(Unary expr);
 		R visitVariableExpr(Variable expr);
 		R visitConditionalExpr(Conditional expr);
@@ -181,6 +182,35 @@ abstract class Expr {
 
 		public Expr getRight() {
 			return this.right;
+		}
+	}
+
+	public static class Set extends Expr {
+		private final Expr object;
+		private final Token name;
+		private final Expr value;
+
+		Set(Expr object, Token name, Expr value) {
+			this.object = object;
+			this.name = name;
+			this.value = value;
+		}
+
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitSetExpr(this);
+		}
+
+		public Expr getObject() {
+			return this.object;
+		}
+
+		public Token getName() {
+			return this.name;
+		}
+
+		public Expr getValue() {
+			return this.value;
 		}
 	}
 
