@@ -38,7 +38,16 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         }
 
         if (stmt.getSuperclass() != null) {
+            currentClass = ClassType.SUBCLASS;
             resolve(stmt.getSuperclass());
+        }
+
+        if (stmt.getSuperclass() != null) {
+            beginScope();
+            VarState superState = new VarState();
+            superState.setDefined(true);
+            superState.setUsed(false);
+            scopes.peek().put("super", superState);
         }
 
         beginScope();
@@ -54,6 +63,10 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             resolveFunction(method, declaration);
         }
         endScope();
+
+        if (stmt.getSuperclass() != null) {
+            endScope();
+        }
 
         for (Stmt.Function method : stmt.getStaticmethods()) {
             FunctionType declaration = FunctionType.FUNCTION;
@@ -144,6 +157,17 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitSetExpr(Expr.Set expr) {
         resolve(expr.getValue());
         resolve(expr.getObject());
+        return null;
+    }
+
+    @Override
+    public Void visitSuperExpr(Expr.Super expr) {
+        if (currentClass == ClassType.NONE) {
+            Lox.error(expr.getKeyword(), "Can't use 'super' outside of a class");
+        } else if (currentClass != ClassType.SUBCLASS) {
+            Lox.error(expr.getKeyword(), "Can't use 'super' in a class with no superclass.");
+        }
+        resolveLocal(expr, expr.getKeyword());
         return null;
     }
 
@@ -273,7 +297,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         Map<String, VarState> scope = scopes.pop();
 
         for (Map.Entry<String, VarState> entry : scope.entrySet()) {
-            if (entry.getKey().equals("this")) {
+            if (entry.getKey().equals("this") || entry.getKey().equals("super")) {
                 continue;
             }
             VarState state = entry.getValue();
