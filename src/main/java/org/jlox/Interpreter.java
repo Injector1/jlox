@@ -221,6 +221,24 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitSuperExpr(Expr.Super expr) {
+        Integer distance = locals.get(expr);
+        LoxClass superClass = (LoxClass) environment.getAt(distance, "super");
+
+        LoxInstance object = (LoxInstance) environment.getAt(distance - 1, "this");
+
+        LoxFunction method = superClass.findMethod(expr.getMethod().getLexeme());
+
+        if (method == null) {
+            throw new RuntimeError(
+                    expr.getMethod(),
+                    "Undefined property '" + expr.getMethod().getLexeme() + "'."
+            );
+        }
+        return method.bind(object);
+    }
+
+    @Override
     public Object visitThisExpr(Expr.This expr) {
         return lookUpVariable(expr.getKeyword(), expr);
     }
@@ -279,6 +297,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             }
         }
         environment.define(stmt.getName().getLexeme(), null);
+
+        if (stmt.getSuperclass() != null) {
+            environment = new Environment(environment);
+            environment.define("super", superclass);
+        }
+
         Map<String, LoxFunction> methods = new HashMap<>();
         Map<String, LoxFunction> staticMethods = new HashMap<>();
 
@@ -294,6 +318,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
 
         LoxClass loxClass = new LoxClass(stmt.getName().getLexeme(), (LoxClass) superclass, methods, staticMethods);
+
+        if (superclass != null) {
+            environment = environment.getEnclosing();
+        }
+
         environment.assign(stmt.getName(), loxClass);
         return null;
     }
